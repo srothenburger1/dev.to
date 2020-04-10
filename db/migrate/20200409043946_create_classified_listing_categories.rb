@@ -1,4 +1,6 @@
 class CreateClassifiedListingCategories < ActiveRecord::Migration[5.2]
+  disable_ddl_transaction!
+
   def change
     create_table :classified_listing_categories do |t|
       t.string :name, null: false
