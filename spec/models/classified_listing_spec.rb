@@ -91,7 +91,8 @@ RSpec.describe ClassifiedListing, type: :model do
 
   describe ".cost_by_category" do
     it "returns the cost per category" do
-      expected_cost = described_class::CATEGORIES_AVAILABLE.dig("cfp", "cost")
+      expected_cost = 2
+      create(:classified_listing_category, :cfp, cost: expected_cost)
       expect(described_class.cost_by_category("cfp")).to eq(expected_cost)
     end
 
