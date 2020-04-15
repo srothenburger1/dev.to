@@ -30,11 +30,9 @@ class ClassifiedListing < ApplicationRecord
 
   scope :published, -> { where(published: true) }
 
-  # TODO: refactor this class method block
-  def self.cost_by_category(slug)
-    ClassifiedListingCategory.where(slug: slug).pluck(:cost).first || 0
-  end
+  delegate :cost, to: :classified_listing_category
 
+  # TODO: refactor this class method block
   def self.select_options_for_categories
     ClassifiedListingCategory.select(:id, :name, :cost).map do |cl|
       ["#{cl.name} (#{cl.cost} #{'Credit'.pluralize(cl.cost)})", cl.id]

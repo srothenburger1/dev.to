@@ -8,8 +8,7 @@ class ClassifiedListingsController < ApplicationController
   before_action :authenticate_user!, only: %i[edit update new dashboard]
 
   def index
-    published_listings = ClassifiedListing.includes(:classified_listing_category).
-      where(published: true)
+    published_listings = ClassifiedListing.where(published: true)
     @displayed_classified_listing = published_listings.find_by(slug: params[:slug]) if params[:slug]
 
     if params[:view] == "moderate"

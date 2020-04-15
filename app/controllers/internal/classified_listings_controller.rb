@@ -14,24 +14,24 @@ class Internal::ClassifiedListingsController < Internal::ApplicationController
   def update
     @classified_listing = ClassifiedListing.find(params[:id])
     handle_publish_status if listing_params[:published]
-    bump_listing if listing_params[:action] == "bump"
+    bump_listing(@classified_listing.cost) if listing_params[:action] == "bump"
     update_listing_details
     clear_listings_cache
     flash[:success] = "Listing updated successfully"
-    redirect_to "/internal/listings/#{@classified_listing.id}/edit"
+    redirect_to edit_internal_classified_listing_path(@classified_listing)
   end
 
   def destroy
     @classified_listing = ClassifiedListing.find(params[:id])
     @classified_listing.destroy
     flash[:warning] = "'#{@classified_listing.title}' was destroyed successfully"
-    redirect_to "/internal/listings"
+    redirect_to internal_classified_listings_path
   end
 
   private
 
   def listing_params
-    allowed_params = %i[published body_markdown title category tag_list action]
+    allowed_params = %i[published body_markdown title classified_listing_category_id tag_list action]
     params.require(:classified_listing).permit(allowed_params)
   end
 
