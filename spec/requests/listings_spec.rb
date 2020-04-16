@@ -3,6 +3,7 @@ require "rails_helper"
 RSpec.describe "/listings", type: :request do
   let(:user) { create(:user) }
   let(:organization) { create(:organization) }
+  let(:cl_category) { create(:classified_listing_category) }
 
   describe "GETS /listings" do
     it "has page content" do
@@ -29,49 +30,57 @@ RSpec.describe "/listings", type: :request do
       sign_in user
     end
 
-    it "creates proper listing if credits are available" do
-      post "/listings", params: {
-        classified_listing: { title: "Hey", category: "education", body_markdown: "hey hey my my" }
+    let(:params) do
+      {
+        classified_listing: {
+          title: "Hey",
+          classified_listing_category_id: cl_category.id,
+          body_markdown: "hey hey my my"
+        }
       }
+    end
+    let(:params_with_tag_list) do
+      {
+        classified_listing: {
+          title: "Hey",
+          classified_listing_category_id: cl_category.id,
+          body_markdown: "hey hey my my",
+          tag_list: "ruby, rails, go"
+        }
+      }
+    end
+
+    it "creates proper listing if credits are available" do
+      post "/listings", params: params
       expect(ClassifiedListing.last.processed_html).to include("hey my")
     end
 
     it "spends credits" do
       num_credits = Credit.where(spent: true).size
-      post "/listings", params: {
-        classified_listing: { title: "Hey", category: "education", body_markdown: "hey hey my my" }
-      }
+      post "/listings", params: params
       expect(Credit.where(spent: true).size).to be > num_credits
     end
 
     it "adds tags" do
-      post "/listings", params: {
-        classified_listing: { title: "Hey", category: "education", body_markdown: "hey hey my my", tag_list: "ruby, rails, go" }
-      }
+      post "/listings", params: params_with_tag_list
       expect(ClassifiedListing.last.cached_tag_list).to include("rails")
     end
 
     it "creates the listing under the user" do
-      post "/listings", params: {
-        classified_listing: { title: "Hey", category: "education", body_markdown: "hey hey my my", tag_list: "ruby, rails, go" }
-      }
+      post "/listings", params: params_with_tag_list
       expect(ClassifiedListing.last.user_id).to eq user.id
     end
 
     it "creates the listing for the user if no organization_id is selected" do
       create(:organization_membership, user_id: user.id, organization_id: organization.id)
-      post "/listings", params: {
-        classified_listing: { title: "Hey", category: "education", body_markdown: "hey hey my my", tag_list: "ruby, rails, go" }
-      }
+      post "/listings", params: params_with_tag_list
       expect(ClassifiedListing.last.organization_id).to eq nil
       expect(ClassifiedListing.last.user_id).to eq user.id
     end
 
     it "creates the listing for the organization" do
       create(:organization_membership, user_id: user.id, organization_id: organization.id)
-      post "/listings", params: {
-        classified_listing: { title: "Hey", category: "education", body_markdown: "hey hey my my", tag_list: "ruby, rails, go", organization_id: organization.id }
-      }
+      post "/listings", params: params_with_tag_list
       expect(ClassifiedListing.last.organization_id).to eq(organization.id)
     end
 
@@ -79,9 +88,7 @@ RSpec.describe "/listings", type: :request do
       another_org = create(:organization)
       create(:organization_membership, user_id: user.id, organization_id: another_org.id)
       expect do
-        post "/listings", params: {
-          classified_listing: { title: "Hey", category: "education", body_markdown: "hey hey my my", tag_list: "ruby, rails, go", organization_id: organization.id }
-        }
+        post "/listings", params: params_with_tag_list
       end.to raise_error Pundit::NotAuthorizedError
     end
   end

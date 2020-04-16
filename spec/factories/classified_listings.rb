@@ -7,8 +7,10 @@ FactoryBot.define do
     bumped_at { Time.current }
 
     after(:build) do |cl|
-      category = ClassifiedListingCategory.first || create(:classified_listing_category)
-      cl.classified_listing_category_id = category.id
+      if cl.classified_listing_category_id.blank?
+        category = ClassifiedListingCategory.first || create(:classified_listing_category)
+        cl.classified_listing_category_id = category.id
+      end
     end
   end
 end

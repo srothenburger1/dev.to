@@ -88,16 +88,5 @@ RSpec.describe ClassifiedListing, type: :model do
       end
     end
   end
-
-  describe ".cost_by_category" do
-    it "returns the cost per category" do
-      expected_cost = 2
-      create(:classified_listing_category, :cfp, cost: expected_cost)
-      expect(described_class.cost_by_category("cfp")).to eq(expected_cost)
-    end
-
-    it "returns 0 with invalid category" do
-      expect(described_class.cost_by_category("invalid")).to eq(0)
-    end
-  end
 end
+
